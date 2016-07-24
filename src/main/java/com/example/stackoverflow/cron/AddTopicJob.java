@@ -1,43 +1,45 @@
 package com.example.stackoverflow.cron;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
-import org.dom4j.Element;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Document;
 
+import com.example.stackoverflow.configuration.StackoverflowConfiguration;
+import com.example.stackoverflow.configuration.YamlConfigParser;
 import com.example.stackoverflow.db.Topic;
 import com.example.stackoverflow.service.TopicService;
-import com.rometools.rome.feed.synd.SyndEntry;
-import com.rometools.rome.feed.synd.SyndFeed;
-import com.rometools.rome.io.SyndFeedInput;
-import com.rometools.rome.io.XmlReader;
 
 @Service("initjob")
 public class AddTopicJob {
 	@Autowired
 	private TopicService topicService;
 
-	public void execute() {
+	@Autowired
+	private YamlConfigParser yamlParser;
+
+	@Autowired
+	private ResourceLoader resourceLoader;
+
+	public void execute() throws IOException {
+
+		Resource resource = resourceLoader.getResource("classpath:config.yaml");
+		File configFile = resource.getFile();
+		StackoverflowConfiguration config = yamlParser.yamlParser(configFile);
 
 		URL url;
-		Integer startNumber = 31674367;
-		StringBuilder currentLink = new StringBuilder("http://stackoverflow.com/questions/");
 
-		for (int i = 0; i <= 10000; i++) {
-			Topic newTopic = new Topic();
+		Topic newTopic = new Topic();
+		org.jsoup.nodes.Document doc = null;
 
-			// List<NewDetails> newDetails = new ArrayList<NewDetails>();
-			org.jsoup.nodes.Document doc = null;
+		for (int i = 0; i <= config.getReadingStep(); i++) {
 			try {
-				doc = Jsoup.connect(currentLink.toString() + (startNumber + i)).get();
+				doc = Jsoup.connect(config.getBaseUrl() + (config.getSuffixNumber() +i)).get();
 			} catch (org.jsoup.HttpStatusException ex) {
 				continue;
 			} catch (IOException e) {
@@ -48,7 +50,7 @@ public class AddTopicJob {
 			newTopic.setTitle(doc.getElementById("question-header")
 					.getElementsByAttributeValue("class", "question-hyperlink").first().ownText());
 
-			newTopic.setUrl(currentLink.toString() + (startNumber + i));
+			newTopic.setUrl(config.getBaseUrl() + (config.getSuffixNumber() +i));
 			System.out.println("UpVote");
 			System.out.println();
 
@@ -66,6 +68,9 @@ public class AddTopicJob {
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} finally {
+				config.setSuffixNumber(config.getSuffixNumber() + config.getReadingStep());
+				yamlParser.writeConfig(configFile, config);
 			}
 		}
 	}
