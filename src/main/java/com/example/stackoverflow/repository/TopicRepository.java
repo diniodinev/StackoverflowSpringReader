@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.example.stackoverflow.db.Topic;
 
 @Repository
-public interface TopicRepository extends CrudRepository<Topic, Long> {
+public interface TopicRepository extends CrudRepository<Topic, String> {
 
 }
