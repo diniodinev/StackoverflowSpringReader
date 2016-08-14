@@ -42,6 +42,12 @@
 			<version>5.1.36</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+		</dependency>
+
+
 		<!-- Quartz Dependencies -->
 		<!-- Includes spring's support classes for quartz -->
 		<dependency>

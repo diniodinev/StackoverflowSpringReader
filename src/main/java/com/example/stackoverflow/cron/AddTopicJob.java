@@ -52,12 +52,12 @@ public class AddTopicJob {
 					.getElementsByAttributeValue("class", "question-hyperlink").first().ownText());
 
 			newTopic.setUrl(config.getBaseUrl() + (config.getSuffixNumber() + i));
-			System.out.println("UpVote");
-			System.out.println();
 
 			newTopic.setVote(
 					Integer.parseInt(doc.getElementsByAttributeValue("itemprop", "upvoteCount").first().ownText()));
 
+			newTopic.setTopicText(doc.getElementsByAttributeValue("itemprop", "text").first().text());
+			
 			org.jsoup.nodes.Element article = doc.getElementById("question")
 					.getElementsByAttributeValue("class", "post-text").first();
 			if (article != null) {
